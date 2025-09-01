@@ -5,8 +5,8 @@
 //  Created by Thomas Rees-Lee on 1/9/2025.
 //
 
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 @main
 struct BreedMemoApp: App {

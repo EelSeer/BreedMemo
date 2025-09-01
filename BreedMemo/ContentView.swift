@@ -5,8 +5,8 @@
 //  Created by Thomas Rees-Lee on 1/9/2025.
 //
 
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
