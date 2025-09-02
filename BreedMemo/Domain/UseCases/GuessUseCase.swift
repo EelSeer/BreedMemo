@@ -5,20 +5,22 @@
 //  Created by Thomas Rees-Lee on 2/9/2025.
 //
 
+/// Model representing a single memory puzzle, containing
+/// a set of possible and a single dog entity.
 struct GuessPuzzle {
     let dog: Dog
     let breedChoices: [String]
 }
 
-enum GuessUseCaseError: Error {
-    case badDog
-    case breedListSize
-}
-
+/// Fetches relevant content to compose
+/// a puzzle object
 protocol GuessUseCase {
     func fetchMemoryPuzzle() async throws -> GuessPuzzle
 }
 
+/// Concrete implementation fetches data from remote
+/// repository and throws an error if the request fails or
+/// is malformed
 class GuessUseCaseImpl: GuessUseCase {
     private let repository: DogRepository
     private var breedList: [String] = []
@@ -30,11 +32,15 @@ class GuessUseCaseImpl: GuessUseCase {
     func fetchMemoryPuzzle() async throws -> GuessPuzzle {
         // Fetch breed list if unavailable
         if breedList.isEmpty {
-            breedList = try await repository.fetchBreedList().flatMap { key, value in
-                if value.isEmpty { return [key] }
-                return value.map {
-                    key.capitalizedFirst + " " + $0.capitalizedFirst
+            do {
+                breedList = try await repository.fetchBreedList().flatMap { key, value in
+                    if value.isEmpty { return [key] }
+                    return value.map {
+                        key.capitalizedFirst + " " + $0.capitalizedFirst
+                    }
                 }
+            } catch {
+                throw GuessUseCaseError.network
             }
         }
 
@@ -44,7 +50,13 @@ class GuessUseCaseImpl: GuessUseCase {
         }
 
         // Get a random dog
-        let randomDog = try await repository.fetchRandomDog()
+        let randomDog: Dog
+        do {
+            randomDog = try await repository.fetchRandomDog()
+        } catch {
+            throw GuessUseCaseError.network
+        }
+
         guard let breed = randomDog.breed else {
             throw GuessUseCaseError.badDog
         }
@@ -61,4 +73,10 @@ class GuessUseCaseImpl: GuessUseCase {
 
         return .init(dog: randomDog, breedChoices: breedChoices.shuffled())
     }
+}
+
+enum GuessUseCaseError: Error {
+    case badDog
+    case breedListSize
+    case network
 }

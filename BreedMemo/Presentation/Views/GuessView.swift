@@ -9,14 +9,20 @@ import SwiftData
 import SwiftUI
 
 struct GuessView: View {
+    enum GuessViewState {
+        case ready
+        case loadPuzzle
+        case loadedPuzzle
+        case error
+        case guessed
+    }
+
     let guessUseCase: GuessUseCase
 
     @State private var currentPuzzle: GuessPuzzle?
+    @State private var state: GuessViewState = .ready
 
-    @State private var loading = true
-    @State private var showError = false
-
-    var body: some View {
+    var contentView: some View {
         VStack {
             HStack {
                 Spacer()
@@ -24,23 +30,46 @@ struct GuessView: View {
                     .frame(width: 200, height: 50)
                     .padding(10)
             }
-            Grid {
-                GridRow {
-                    Button("Guess") {}
-                    Button("Guess") {}
-                }
-                GridRow {
-                    Button("Guess") {}
-                    Button("Guess") {}
-                }
+            AsyncImage(url: currentPuzzle?.dog.url)
+        }
+    }
+
+    var errorView: some View {
+        VStack {
+            Text("Error loading puzzle")
+            Button("Retry") {
+                state = .loadPuzzle
             }
-        }.task {
-            do {
-                currentPuzzle = try await guessUseCase.fetchMemoryPuzzle()
-                loading = false
-            } catch {
-                loading = false
-                showError = true
+        }
+    }
+
+    var body: some View {
+        ZStack {
+            switch state {
+            case .ready:
+                EmptyView()
+            case .loadPuzzle:
+                ProgressView()
+            case .loadedPuzzle, .guessed:
+                contentView
+            case .error:
+                errorView
+            }
+        }
+        .task {
+            state = .loadPuzzle
+        }
+        .task(id: state) {
+            switch state {
+            case .loadPuzzle:
+                do {
+                    currentPuzzle = try await guessUseCase.fetchMemoryPuzzle()
+                    state = .loadedPuzzle
+                } catch {
+                    state = .error
+                }
+            default:
+                break
             }
         }
     }
