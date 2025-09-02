@@ -54,25 +54,24 @@ import Testing
             return (response, data)
         }
 
-        let list = await repository.fetchBreedList()
-        switch list {
-        case let .success(list):
+        do {
+            let list = try await repository.fetchBreedList()
             #expect(list.count == 2)
             #expect(list["akita"] == [])
             #expect(list["australian"] == ["kelpie", "shepherd"])
-        case .failure:
+        } catch {
             #expect(Bool(false))
         }
     }
 
     @Test func fetchListFailure() async throws {
         MockURLProtocol.error = URLError(.unknown)
-        let list = await repository.fetchBreedList()
-        switch list {
-        case .success:
-            #expect(Bool(false))
-        case .failure:
-            #expect(Bool(true))
+        await confirmation { confirmation in
+            do {
+                _ = try await repository.fetchBreedList()
+            } catch {
+                confirmation()
+            }
         }
     }
 
@@ -94,23 +93,24 @@ import Testing
             return (response, data)
         }
 
-        let list = await repository.fetchRandomDog()
-        switch list {
-        case let .success(imagePath):
-            #expect(imagePath == "https://images.dog.ceo/breeds/schipperke/n02104365_7768.jpg")
-        case .failure:
+        do {
+            let dog = try await repository.fetchRandomDog()
+            #expect(dog.url == URL(string: "https://images.dog.ceo/breeds/schipperke/n02104365_7768.jpg"))
+            #expect(dog.breed == "schipperke")
+        } catch {
             #expect(Bool(false))
         }
     }
 
     @Test func fetchRandomImageFailure() async throws {
         MockURLProtocol.error = URLError(.unknown)
-        let list = await repository.fetchRandomDog()
-        switch list {
-        case .success:
-            #expect(Bool(false))
-        case .failure:
-            #expect(Bool(true))
+
+        await confirmation { confirmation in
+            do {
+                _ = try await repository.fetchRandomDog()
+            } catch {
+                confirmation()
+            }
         }
     }
 }

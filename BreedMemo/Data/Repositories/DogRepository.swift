@@ -11,14 +11,14 @@ import Foundation
 protocol DogRepository {
     /// - Returns: Dictionary of dog breeds with subbreeds in stored
     /// array.
-    func fetchBreedList() async -> Result<[String: [String]], Error>
+    func fetchBreedList() async throws -> [String: [String]]
 
     /// - Returns: Image URL for a random dog.
-    func fetchRandomDog() async -> Result<String, Error>
+    func fetchRandomDog() async throws -> Dog
 }
 
 /// Concrete implementation of DogRepository, fetching from remote service.
-class DogRepositoryImpl {
+class DogRepositoryImpl: DogRepository {
     struct BreedListResponse: Codable {
         let message: [String: [String]]
         let status: String
@@ -35,27 +35,27 @@ class DogRepositoryImpl {
         self.session = session
     }
 
-    func fetchBreedList() async -> Result<[String: [String]], Error> {
+    func fetchBreedList() async throws -> [String: [String]] {
         do {
             let url = URL(string: "https://dog.ceo/api/breeds/list/all")
             let (data, _) = try await session.data(from: url!)
             let decoder = JSONDecoder()
             let list = try decoder.decode(BreedListResponse.self, from: data)
-            return .success(list.message)
-        } catch {
-            return .failure(error)
+            return list.message
         }
     }
 
-    func fetchRandomDog() async -> Result<String, Error> {
+    func fetchRandomDog() async throws -> Dog {
         do {
             let url = URL(string: "https://dog.ceo/api/breeds/image/random")
             let (data, _) = try await session.data(from: url!)
             let decoder = JSONDecoder()
-            let list = try decoder.decode(RandomImageResponse.self, from: data)
-            return .success(list.message)
-        } catch {
-            return .failure(error)
+            let response = try decoder.decode(RandomImageResponse.self, from: data)
+
+            if let url = URL(string: response.message) {
+                return Dog(url: url)
+            }
+            throw NSError(domain: "Invalid URL", code: 0, userInfo: nil)
         }
     }
 }
