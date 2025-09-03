@@ -34,7 +34,7 @@ class GuessUseCaseImpl: GuessUseCase {
         if breedList.isEmpty {
             do {
                 breedList = try await repository.fetchBreedList().flatMap { key, value in
-                    if value.isEmpty { return [key] }
+                    if value.isEmpty { return [key.capitalizedFirst] }
                     return value.map {
                         key.capitalizedFirst + " " + $0.capitalizedFirst
                     }
@@ -65,7 +65,7 @@ class GuessUseCaseImpl: GuessUseCase {
         var breedChoices = Set<String>()
         breedChoices.insert(breed)
 
-        while breedChoices.count < 3 {
+        while breedChoices.count < 4 {
             if let randomBreed = breedList.randomElement() {
                 breedChoices.insert(randomBreed)
             }
