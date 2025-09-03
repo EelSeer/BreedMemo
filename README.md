@@ -1,9 +1,11 @@
-BreedMemo
+**BreedMemo**
 
 Memorization assistance app for dog lovers. The app is intended to be a game in which players are presented with images of dogs and try to guess as many as possible in a row from a set of options randomly fetched from a list of breeds. A counter keeps track of successful guesses and should play some kind of animation or graphic when a streak of appropriate size is reached.
 
-Installation: There's no prebuilt distributable. Just fetch, build and run locally.
+**Installation**
+There's no prebuilt distributable. Just fetch, build and run locally.
 
+**Architecture**
 The application makes use of a rough Clean Architecture pattern, which I used to demonstrate splitting responsibilities within clearly defined boundaries and to provide a simple guide to extending the app further. Layers are:
 
 Data Layer: Fetching data from remotes and/or storing and retrieving it locally. Our data layer just contains a repository that fetches remote content presently.
@@ -16,7 +18,7 @@ The presentation layer also contains a simple component (PawBox).
 
 A small dependency injection system is used that lazily loads objects as required.
 
-Outstanding Features/Issues:
+**Outstanding Features/Issues**
 
 - Add Tests for the GuessUseCase
 - Naive error handling (we're not displaying useful messages or data to the user here)
