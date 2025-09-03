@@ -26,7 +26,7 @@ struct PawBox: View {
             .padding(10)
             .background(
                 RoundedRectangle(cornerRadius: 20.0)
-                .fill(Color.cyan)
+                    .fill(Color.cyan)
             )
         }
         .fixedSize()
